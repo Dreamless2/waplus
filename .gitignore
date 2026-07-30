@@ -1,12 +1,6 @@
-# Chrome extension build artifacts & logs
-*.crx
-*.pem
-*.log
-
-# System Files
+# OS Metadata
 .DS_Store
 Thumbs.db
-desktop.ini
 
 # IDEs and Editors
 .vscode/
@@ -16,3 +10,11 @@ desktop.ini
 *.njsproj
 *.sln
 *.swp
+
+# Extension Builds
+*.zip
+*.crx
+*.pem
+
+# Chrome Auto-generated
+_metadata/
