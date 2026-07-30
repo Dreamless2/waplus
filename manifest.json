@@ -14,15 +14,15 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "mail-1013_16.png",
-      "48": "mail-1013_48.png",
-      "128": "mail-1013_128.png"
+      "16": "green-add-button_16.png",
+      "48": "green-add-button_48.png",
+      "128": "green-add-button_128.png"
     }
   },
   "icons": {
-    "16": "mail-1013_16.png",
-    "48": "mail-1013_48.png",
-    "128": "mail-1013_128.png"
+    "16": "green-add-button_16.png",
+    "48": "green-add-button_48.png",
+    "128": "green-add-button_128.png"
   },
   "declarative_net_request": {
     "rule_resources": [
