@@ -13,7 +13,9 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    
+    "default_icon": {
+      
+    }
   },
   "declarative_net_request": {
     "rule_resources": [
