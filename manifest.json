@@ -16,15 +16,14 @@
     "default_icon": {
       "16": "mail-1013_16.png",
       "48": "mail-1013_48.png",
-      "128": "mail-1013_128.png"      
+      "128": "mail-1013_128.png"
     }
   },
   "icons": {
     "16": "mail-1013_16.png",
     "48": "mail-1013_48.png",
-    "128": "mail-1013_128.png"      
+    "128": "mail-1013_128.png"
   },
-  
   "declarative_net_request": {
     "rule_resources": [
       {
