@@ -44,7 +44,7 @@
       "js": [
         "content.js"
       ],
-      "r"
+      "run_at"
     }
   ]
 }
