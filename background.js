@@ -1,12 +1,20 @@
 chrome.runtime.onMessage.addListener((message, sender) => {
-    if (message.type === 'inject-hook' && sender.tab?.id) {
-        chrome.scripting.executeScript({
-            target: { tabId: sender.tab.id },
-            world: 'MAIN',
-            func: hookWhatsAppWebSocketMain,
-            args: [message.settings]
-        });
+    if (message.type !== 'inject-hook') return;
+    if (!sender.tab?.id) return;
+
+    const url = sender.tab.url || '';
+    if (!url.startsWith('https://web.whatsapp.com')) {
+        return;
     }
+
+    chrome.scripting.executeScript({
+        target: { tabId: sender.tab.id },
+        world: 'MAIN',
+        func: hookWhatsAppWebSocketMain,
+        args: [message.settings]
+    }).catch((err) => {
+        console.warn('[wa-ext] Falha ao injetar hook:', err.message);
+    });
 });
 
 function hookWhatsAppWebSocketMain(initialSettings) {
