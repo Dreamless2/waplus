@@ -4,64 +4,158 @@
 <head>
   <meta charset="utf-8">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      width: 220px;
-      font-family: Arial, sans-serif;
-      padding: 10px;
+      width: 240px;
+      font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+      padding: 16px;
       margin: 0;
-      background-color: #f4f4f9;
+      background: linear-gradient(180deg, #f4f8f6 0%, #eef2f0 100%);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #d9e2df;
+    }
+
+    .header-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: #25D366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-icon svg {
+      width: 13px;
+      height: 13px;
+      fill: #fff;
     }
 
     h3 {
-      margin-top: 0;
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
       color: #075E54;
-      border-bottom: 2px solid #25D366;
-      padding-bottom: 5px;
     }
 
     .option {
-      margin: 12px 0;
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      padding: 9px 4px;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+
+    .option:hover {
+      background: #ffffffb0;
     }
 
     label {
-      margin-left: 8px;
-      font-size: 14px;
+      font-size: 13px;
       color: #333;
       cursor: pointer;
+      user-select: none;
     }
 
-    input[type="checkbox"] {
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 21px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
       cursor: pointer;
-      width: 16px;
-      height: 16px;
+      inset: 0;
+      background-color: #ccc;
+      border-radius: 21px;
+      transition: 0.2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      height: 15px;
+      width: 15px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    input:checked+.slider {
+      background-color: #25D366;
+    }
+
+    input:checked+.slider::before {
+      transform: translateX(17px);
     }
   </style>
   <script defer src="popup.js"></script>
 </head>
 
 <body>
-  <h3>Privacy Panel</h3>
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2 22l4.93-1.38C8.42 21.5 10.15 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z" />
+      </svg>
+    </div>
+    <h3>Privacy Panel</h3>
+  </div>
 
   <div class="option">
-    <input type="checkbox" id="status" checked>
     <label for="status">Anonymous Status</label>
+    <label class="switch">
+      <input type="checkbox" id="status" checked>
+      <span class="slider"></span>
+    </label>
   </div>
 
   <div class="option">
-    <input type="checkbox" id="blueTicks">
     <label for="blueTicks">Hide Blue Ticks</label>
+    <label class="switch">
+      <input type="checkbox" id="blueTicks">
+      <span class="slider"></span>
+    </label>
   </div>
 
   <div class="option">
-    <input type="checkbox" id="audio" checked>
     <label for="audio">Hide Audio Played</label>
+    <label class="switch">
+      <input type="checkbox" id="audio" checked>
+      <span class="slider"></span>
+    </label>
   </div>
 
   <div class="option">
-    <input type="checkbox" id="typing">
     <label for="typing">Hide Typing Status</label>
+    <label class="switch">
+      <input type="checkbox" id="typing">
+      <span class="slider"></span>
+    </label>
   </div>
 </body>
 
