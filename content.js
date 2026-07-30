@@ -8,11 +8,48 @@ let settings = {
 function updateSettings() {
     chrome.storage.local.get(['status', 'typing', 'blueTicks', 'audio'], (result) => {
         Object.assign(settings, result);
+
         const btn = document.getElementById('btn-download-status-native');
         if (!settings.status && btn) {
             btn.remove();
         }
+
+        window.postMessage({ source: 'wa-ext', type: 'settings-update', settings }, '*');
     });
+}
+
+function hookWhatsAppWebSocketMain(initialSettings) {
+    if (window.__waHookInstalled) return;
+    window.__waHookInstalled = true;
+
+    let localSettings = { ...initialSettings };
+
+    window.addEventListener('message', (event) => {
+        if (event.source !== window) return;
+        if (event.data?.source === 'wa-ext' && event.data?.type === 'settings-update') {
+            localSettings = { ...localSettings, ...event.data.settings };
+        }
+    });
+
+    const OriginalWebSocket = window.WebSocket;
+    window.WebSocket = function (...args) {
+        const ws = new OriginalWebSocket(...args);
+        const originalSend = ws.send;
+
+        ws.send = function (data) {
+            if (typeof data === 'string') {
+                if (localSettings.typing && data.includes('"composing"')) return;
+                if (localSettings.blueTicks && data.includes('"read"')) return;
+                if (localSettings.audio && data.includes('"played"')) return;
+            }
+            return originalSend.apply(this, arguments);
+        };
+        return ws;
+    };
+}
+
+function injectHook() {
+    chrome.runtime.sendMessage({ type: 'inject-hook', settings });
 }
 
 function findCloseButton(root) {
@@ -84,29 +121,6 @@ function injectNativeButton() {
     targetRow.insertBefore(btn, closeButtonContainer);
 }
 
-function hookWhatsAppWebSocket() {
-    const OriginalWebSocket = window.WebSocket;
-    window.WebSocket = function (...args) {
-        const ws = new OriginalWebSocket(...args);
-        const originalSend = ws.send;
-
-        ws.send = function (data) {
-            if (typeof data === 'string') {
-                if (settings.typing && data.includes('"composing"')) return;
-                if (settings.blueTicks && data.includes('"read"')) return;
-                if (settings.audio && data.includes('"played"')) return;
-            }
-            return originalSend.apply(this, arguments);
-        };
-        return ws;
-    };
-}
-
-const script = document.createElement('script');
-script.textContent = `(${hookWhatsAppWebSocket.toString()})();`;
-(document.head || document.documentElement).appendChild(script);
-script.remove();
-
 chrome.storage.onChanged.addListener(() => {
     updateSettings();
 });
@@ -115,5 +129,7 @@ const observer = new MutationObserver(() => {
     injectNativeButton();
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+observer.observe(document.documentElement, { childList: true, subtree: true });
+
 updateSettings();
+injectHook();
