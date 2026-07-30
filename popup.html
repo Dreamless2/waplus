@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 220px;
+      font-family: Arial, sans-serif;
+      padding: 10px;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: #075E54;
+      border-bottom: 2px solid #25D366;
+      padding-bottom: 5px;
+    }
+
+    .option {
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    label {
+      margin-left: 8px;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+    }
+  </style>
+  <script defer src="popup.js"></script>
+</head>
+
+<body>
+  <h3>Privacy Panel</h3>
+
+  <div class="option">
+    <input type="checkbox" id="status" checked>
+    <label for="status">Anonymous Status</label>
+  </div>
+
+  <div class="option">
+    <input type="checkbox" id="blueTicks">
+    <label for="blueTicks">Hide Blue Ticks</label>
+  </div>
+
+  <div class="option">
+    <input type="checkbox" id="audio" checked>
+    <label for="audio">Hide Audio Played</label>
+  </div>
+
+  <div class="option">
+    <input type="checkbox" id="typing">
+    <label for="typing">Hide Typing Status</label>
+  </div>
+</body>
+
+</html>
