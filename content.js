@@ -117,15 +117,3 @@ const observer = new MutationObserver(() => {
 
 observer.observe(document.body, { childList: true, subtree: true });
 updateSettings();
-
-function disableLeavePrompt() {
-    window.onbeforeunload = null;
-    window.addEventListener('beforeunload', (e) => {
-        e.stopImmediatePropagation();
-    }, true);
-}
-
-const scriptPrompt = document.createElement('script');
-scriptPrompt.textContent = `(${disableLeavePrompt.toString()})();`;
-(document.head || document.documentElement).appendChild(scriptPrompt);
-scriptPrompt.remove();
