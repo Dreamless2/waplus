@@ -14,8 +14,8 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "ma",
-      "48": "",
+      "16": "mail-1013_16.png",
+      "48": "mail",
       "128": ""
       
     }
