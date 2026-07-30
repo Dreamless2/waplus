@@ -1,0 +1,18 @@
+# Chrome extension build artifacts & logs
+*.crx
+*.pem
+*.log
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
