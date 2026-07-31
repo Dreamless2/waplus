@@ -42,12 +42,11 @@ function hookWhatsAppWebSocketMain(initialSettings) {
                 if (localSettings.blueTicks && data.includes('"read"')) return;
                 if (localSettings.audio && data.includes('"played"')) return;
                 if (localSettings.hideOnline) {
-        // Bloqueia presence (available / unavailable)
-        if (data.includes('"available"') || data.includes('"unavailable"') || 
-            data.includes('presence') || data.includes('"type":"available"')) {
-            return; // não envia
-        }
-    }
+                    if (data.includes('"available"') || data.includes('"unavailable"') ||
+                        data.includes('presence') || data.includes('"type":"available"')) {
+                        return; // não envia
+                    }
+                }
             }
             return originalSend.apply(this, arguments);
         };
@@ -141,7 +140,7 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 updateSettings();
 injectHook();
 
-const messageCache = new Map(); 
+const messageCache = new Map();
 
 function cacheMessages() {
     const msgs = document.querySelectorAll('[data-id]');
@@ -186,16 +185,16 @@ function restoreDeleted() {
                     `;
 
                     // Tenta inserir no lugar aproximado
-                    const chat = document.querySelector('[data-testid="conversation-panel-messages"]') 
-                              || document.querySelector('.copyable-area');
+                    const chat = document.querySelector('[data-testid="conversation-panel-messages"]')
+                        || document.querySelector('.copyable-area');
                     if (chat) chat.appendChild(div);
                 }
             });
         });
     });
 
-    const chatContainer = document.querySelector('[data-testid="conversation-panel-messages"]') 
-                       || document.body;
+    const chatContainer = document.querySelector('[data-testid="conversation-panel-messages"]')
+        || document.body;
     observer.observe(chatContainer, { childList: true, subtree: true });
 }
 
