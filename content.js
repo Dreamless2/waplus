@@ -41,6 +41,13 @@ function hookWhatsAppWebSocketMain(initialSettings) {
                 if (localSettings.typing && data.includes('"composing"')) return;
                 if (localSettings.blueTicks && data.includes('"read"')) return;
                 if (localSettings.audio && data.includes('"played"')) return;
+                if (localSettings.hideOnline) {
+        // Bloqueia presence (available / unavailable)
+        if (data.includes('"available"') || data.includes('"unavailable"') || 
+            data.includes('presence') || data.includes('"type":"available"')) {
+            return; // não envia
+        }
+    }
             }
             return originalSend.apply(this, arguments);
         };
