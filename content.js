@@ -216,7 +216,6 @@ function startAntiDelete() {
     console.log('[Anti-Delete] Ativado');
 }
 
-// Só inicia se a opção estiver ligada
 if (settings.antiDelete) {
     startAntiDelete();
 }
