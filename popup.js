@@ -1,4 +1,4 @@
-const options = ['status', 'blueTicks', 'audio', 'typing', 'hideO', '', ''];
+const options = ['status', 'blueTicks', 'audio', 'typing', 'hideOnline', '', ''];
 
 document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.local.get(options, (result) => {
