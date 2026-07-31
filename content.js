@@ -204,11 +204,9 @@ function startAntiDelete() {
             });
         });
 
-        // Observa o body inteiro (mais seguro)
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    // Cache
     const cacheObserver = new MutationObserver(cacheMessages);
     cacheObserver.observe(document.body, { childList: true, subtree: true });
 
