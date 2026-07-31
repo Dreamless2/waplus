@@ -212,8 +212,6 @@ if (settings.antiDelete) {
     startAntiDelete();
 }
 
-
-
 function setupOnlineNotifier() {
     let lastStatus = {};
 
