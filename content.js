@@ -203,3 +203,70 @@ const cacheObserver = new MutationObserver(cacheMessages);
 cacheObserver.observe(document.body, { childList: true, subtree: true });
 cacheMessages();
 restoreDeleted();
+
+function setupOnlineNotifier() {
+    let lastStatus = {};
+
+    const checkOnline = () => {
+        // 1. Chat aberto (header)
+        const header = document.querySelector('[data-testid="conversation-info-header"]') 
+                    || document.querySelector('header');
+        if (header) {
+            const subtitle = header.querySelector('span[title], span[dir="auto"]');
+            const nameEl = header.querySelector('span[dir="auto"]');
+            const name = nameEl ? nameEl.innerText : 'Contato';
+            const status = subtitle ? subtitle.innerText.toLowerCase() : '';
+
+            if (status.includes('online') || status.includes('digitando') || status.includes('gravando')) {
+                if (lastStatus[name] !== 'online') {
+                    lastStatus[name] = 'online';
+                    notify(`${name} está online!`);
+                }
+            } else {
+                lastStatus[name] = 'offline';
+            }
+        }
+
+        // 2. Lista de conversas (opcional – mais pesado)
+        document.querySelectorAll('[data-testid="cell-frame-container"]').forEach(cell => {
+            const name = cell.querySelector('span[dir="auto"]')?.innerText;
+            const status = cell.querySelector('span[title*="online" i], span[title*="Online"]');
+            if (name && status && lastStatus[name] !== 'online') {
+                lastStatus[name] = 'online';
+                notify(`${name} está online!`);
+            }
+        });
+    };
+
+    function notify(msg) {
+        // Notificação do navegador
+        if (Notification.permission === 'granted') {
+            new Notification('WhatsApp', { body: msg, icon: 'https://web.whatsapp.com/favicon.ico' });
+        }
+        // Também mostra um toast na tela
+        showToast(msg);
+    }
+
+    function showToast(text) {
+        const toast = document.createElement('div');
+        toast.textContent = text;
+        toast.style.cssText = `
+            position: fixed; bottom: 30px; left: 30px; z-index: 99999;
+            background: #25D366; color: white; padding: 12px 20px;
+            border-radius: 8px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+
+    // Pede permissão de notificação
+    if (Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    // Roda a cada 1.5 segundos
+    setInterval(checkOnline, 1500);
+}
+
+setupOnlineNotifier();
