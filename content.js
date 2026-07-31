@@ -141,7 +141,6 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 updateSettings();
 injectHook();
 
-const messageCache = new Map();
 
 function startAntiDelete() {
     if (!document.body) {
