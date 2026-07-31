@@ -150,60 +150,107 @@ function startAntiDelete() {
     if (window.__waAntiDeleteInstalled) return;
     window.__waAntiDeleteInstalled = true;
 
+    const MAX_CACHE_SIZE = 5000;
+    const DELETED_MARKERS = [
+        'Mensagem apagada',
+        'This message was deleted',
+        'Se eliminó este mensaje',
+        'Ce message a été supprimé',
+        'Diese Nachricht wurde gelöscht',
+        'Questo messaggio è stato eliminato'
+    ];
+
     const messageCache = new Map();
 
-    function cacheMessages() {
-        const msgs = document.querySelectorAll('[data-id]');
-        msgs.forEach(msg => {
-            const id = msg.getAttribute('data-id');
-            if (!id || messageCache.has(id) || msg.hasAttribute('data-ext-deleted')) return;
-
-            const textEl = msg.querySelector('.selectable-text, span[dir]');
-            const text = textEl ? textEl.innerText : '';
-            const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
-
-            const isSystemDeleted = text.includes('Mensagem apagada') || text.includes('This message was deleted');
-
-            if (text && !isSystemDeleted) {
-                messageCache.set(id, { text, time, element: msg });
-            }
-        });
+    function isDeletedText(text) {
+        return DELETED_MARKERS.some(marker => text.includes(marker));
     }
 
-    function watchDeletions() {
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach(mut => {
-                let targetNode = mut.target;
-                if (targetNode.nodeType === 3) {
-                    targetNode = targetNode.parentElement;
+    function pruneCache() {
+        if (messageCache.size <= MAX_CACHE_SIZE) return;
+        const excess = messageCache.size - MAX_CACHE_SIZE;
+        const keys = messageCache.keys();
+        for (let i = 0; i < excess; i++) {
+            messageCache.delete(keys.next().value);
+        }
+    }
+
+    function getMessageText(msg) {
+        const textEl = msg.querySelector('.copyable-text span[dir], .selectable-text, span[dir]');
+        return textEl ? textEl.innerText : '';
+    }
+
+    function cacheMessage(msg) {
+        const id = msg.getAttribute('data-id');
+        if (!id || messageCache.has(id) || msg.hasAttribute('data-ext-deleted')) return;
+
+        const text = getMessageText(msg);
+        const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
+
+        if (text && !isDeletedText(text)) {
+            messageCache.set(id, { text, time, element: msg });
+            pruneCache();
+        }
+    }
+
+    function renderRecovered(msgContainer, cached) {
+        msgContainer.setAttribute('data-ext-deleted', 'true');
+
+        const currentTextEl = msgContainer.querySelector('.selectable-text, span[dir]');
+        const textContainer = msgContainer.querySelector('.selectable-text')?.parentElement || currentTextEl?.parentElement;
+        if (!textContainer) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'border-left: 3px solid #ff5555; padding-left: 8px; margin: 4px 0; color: #ffcccc;';
+
+        const label = document.createElement('strong');
+        label.style.cssText = 'color:#ff5555; font-size: 12px;';
+        label.textContent = '[Recuperada]';
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(document.createElement('br'));
+        wrapper.appendChild(document.createTextNode(cached.text));
+
+        textContainer.innerHTML = '';
+        textContainer.appendChild(wrapper);
+    }
+
+    function handleMutation(mut) {
+        let targetNode = mut.target;
+        if (targetNode.nodeType === 3) {
+            targetNode = targetNode.parentElement;
+        }
+
+        const msgContainer = targetNode?.closest('[data-id]');
+        if (!msgContainer) {
+            Array.from(mut.addedNodes).forEach(node => {
+                if (node.nodeType !== 1) return;
+                if (node.hasAttribute?.('data-id')) {
+                    cacheMessage(node);
                 }
-
-                const msgContainer = targetNode?.closest('[data-id]');
-                if (!msgContainer) return;
-
-                const id = msgContainer.getAttribute('data-id');
-                if (!id || !messageCache.has(id) || msgContainer.hasAttribute('data-ext-deleted')) return;
-
-                const currentTextEl = msgContainer.querySelector('.selectable-text, span[dir]');
-                const currentText = currentTextEl ? currentTextEl.innerText : '';
-                
-                const becameDeleted = currentText.includes('Mensagem apagada') || currentText.includes('This message was deleted');
-
-                if (becameDeleted) {
-                    const cached = messageCache.get(id);
-                    msgContainer.setAttribute('data-ext-deleted', 'true');
-
-                    const textContainer = msgContainer.querySelector('.selectable-text')?.parentElement || currentTextEl?.parentElement;
-                    if (textContainer) {
-                        textContainer.innerHTML = `
-                            <div style="border-left: 3px solid #ff5555; padding-left: 8px; margin: 4px 0; color: #ffcccc;">
-                                <strong style="color:#ff5555; font-size: 12px;">[Recuperada]</strong><br>
-                                ${cached.text}
-                            </div>
-                        `;
-                    }
-                }
+                node.querySelectorAll?.('[data-id]').forEach(cacheMessage);
             });
+            return;
+        }
+
+        const id = msgContainer.getAttribute('data-id');
+        if (!id || msgContainer.hasAttribute('data-ext-deleted')) return;
+
+        if (!messageCache.has(id)) {
+            cacheMessage(msgContainer);
+            return;
+        }
+
+        const currentText = getMessageText(msgContainer);
+        if (isDeletedText(currentText)) {
+            const cached = messageCache.get(id);
+            renderRecovered(msgContainer, cached);
+        }
+    }
+
+    function startObserving() {
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(handleMutation);
         });
 
         observer.observe(document.body, {
@@ -213,17 +260,8 @@ function startAntiDelete() {
         });
     }
 
-    const cacheObserver = new MutationObserver((mutations) => {
-        const shouldCache = mutations.some(mut => 
-            Array.from(mut.addedNodes).some(node => node.nodeType === 1 && !node.hasAttribute?.('data-ext-deleted'))
-        );
-        if (shouldCache) cacheMessages();
-    });
-
-    cacheObserver.observe(document.body, { childList: true, subtree: true });
-
-    cacheMessages();
-    watchDeletions();
+    document.querySelectorAll('[data-id]').forEach(cacheMessage);
+    startObserving();
 }
 
 if (settings.antiDelete) {
