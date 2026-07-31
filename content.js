@@ -195,7 +195,6 @@ function restoreDeleted() {
     observer.observe(chatContainer, { childList: true, subtree: true });
 }
 
-// Atualiza o cache a cada mudança
 const cacheObserver = new MutationObserver(cacheMessages);
 cacheObserver.observe(document.body, { childList: true, subtree: true });
 cacheMessages();
