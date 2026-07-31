@@ -44,7 +44,7 @@ function hookWhatsAppWebSocketMain(initialSettings) {
                 if (localSettings.hideOnline) {
                     if (data.includes('"available"') || data.includes('"unavailable"') ||
                         data.includes('presence') || data.includes('"type":"available"')) {
-                        return; // não envia
+                        return;
                     }
                 }
             }
