@@ -141,7 +141,6 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 updateSettings();
 injectHook();
 
-
 function startAntiDelete() {
     if (!document.body) {
         setTimeout(startAntiDelete, 300);
@@ -192,8 +191,8 @@ function startAntiDelete() {
                             <div style="font-size:11px;opacity:0.6;margin-top:4px">${cached.time}</div>
                         `;
 
-                        const chat = document.querySelector('[data-testid="conversation-panel-messages"]') 
-                                  || document.querySelector('.copyable-area');
+                        const chat = document.querySelector('[data-testid="conversation-panel-messages"]')
+                            || document.querySelector('.copyable-area');
                         if (chat) {
                             chat.appendChild(div);
                         }
@@ -222,8 +221,8 @@ function setupOnlineNotifier() {
     let lastStatus = {};
 
     const checkOnline = () => {
-        const header = document.querySelector('[data-testid="conversation-info-header"]') 
-                    || document.querySelector('header');
+        const header = document.querySelector('[data-testid="conversation-info-header"]')
+            || document.querySelector('header');
         if (header) {
             const subtitle = header.querySelector('span[title], span[dir="auto"]');
             const nameEl = header.querySelector('span[dir="auto"]');
