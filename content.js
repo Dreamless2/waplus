@@ -212,7 +212,7 @@ function startAntiDelete() {
     }
 
     const cacheObserver = new MutationObserver((mutations) => {
-        const shouldCache = mutations.some(mut => 
+        const shouldCache = mutations.some(mut =>
             Array.from(mut.addedNodes).some(node => node.nodeType === 1 && !node.hasAttribute?.('data-ext-deleted'))
         );
         if (shouldCache) cacheMessages();
@@ -221,7 +221,7 @@ function startAntiDelete() {
     cacheObserver.observe(document.body, { childList: true, subtree: true });
 
     cacheMessages();
-    restoreDeleted();    
+    restoreDeleted();
 }
 
 if (settings.antiDelete) {
@@ -234,7 +234,7 @@ function setupOnlineNotifier() {
     const checkOnline = () => {
         let activeContactName = null;
         const header = document.querySelector('[data-testid="conversation-info-header"]') || document.querySelector('header');
-        
+
         if (header) {
             const subtitle = header.querySelector('span[title], span[dir="auto"]');
             const nameEl = header.querySelector('span[dir="auto"]');
@@ -259,7 +259,7 @@ function setupOnlineNotifier() {
             if (!name || name === activeContactName) return;
 
             const isOnline = cell.querySelector('span[title*="online" i], span[title*="Online"]') !== null;
-            
+
             if (isOnline) {
                 if (lastStatus[name] !== 'online') {
                     lastStatus[name] = 'online';
@@ -299,6 +299,5 @@ function setupOnlineNotifier() {
 
     setInterval(checkOnline, 2000);
 }
-
 
 setupOnlineNotifier();
