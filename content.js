@@ -144,7 +144,6 @@ injectHook();
 const messageCache = new Map();
 
 function startAntiDelete() {
-    // Espera o body existir
     if (!document.body) {
         setTimeout(startAntiDelete, 300);
         return;
