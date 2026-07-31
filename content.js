@@ -208,7 +208,6 @@ function setupOnlineNotifier() {
     let lastStatus = {};
 
     const checkOnline = () => {
-        // 1. Chat aberto (header)
         const header = document.querySelector('[data-testid="conversation-info-header"]') 
                     || document.querySelector('header');
         if (header) {
@@ -227,7 +226,6 @@ function setupOnlineNotifier() {
             }
         }
 
-        // 2. Lista de conversas (opcional – mais pesado)
         document.querySelectorAll('[data-testid="cell-frame-container"]').forEach(cell => {
             const name = cell.querySelector('span[dir="auto"]')?.innerText;
             const status = cell.querySelector('span[title*="online" i], span[title*="Online"]');
