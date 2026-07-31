@@ -154,8 +154,6 @@ function cacheMessages() {
 }
 
 function restoreDeleted() {
-    // Quando o WhatsApp remove uma mensagem, ele costuma deixar um placeholder ou sumir com o data-id
-    // A gente observa e recria
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(mut => {
             mut.removedNodes.forEach(node => {
