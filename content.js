@@ -208,9 +208,7 @@ function startAntiDelete() {
     cacheObserver.observe(document.body, { childList: true, subtree: true });
 
     cacheMessages();
-    restoreDeleted();
-
-    
+    restoreDeleted();    
 }
 
 if (settings.antiDelete) {
