@@ -143,66 +143,85 @@ injectHook();
 
 const messageCache = new Map();
 
-function cacheMessages() {
-    const msgs = document.querySelectorAll('[data-id]');
-    msgs.forEach(msg => {
-        const id = msg.getAttribute('data-id');
-        if (!id || messageCache.has(id)) return;
+function startAntiDelete() {
+    // Espera o body existir
+    if (!document.body) {
+        setTimeout(startAntiDelete, 300);
+        return;
+    }
 
-        const textEl = msg.querySelector('.selectable-text, span[dir]');
-        const text = textEl ? textEl.innerText : '';
-        const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
+    const messageCache = new Map();
 
-        if (text) {
-            messageCache.set(id, { text, time, html: msg.outerHTML });
-        }
-    });
-}
+    function cacheMessages() {
+        const msgs = document.querySelectorAll('[data-id]');
+        msgs.forEach(msg => {
+            const id = msg.getAttribute('data-id');
+            if (!id || messageCache.has(id)) return;
 
-function restoreDeleted() {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach(mut => {
-            mut.removedNodes.forEach(node => {
-                if (node.nodeType !== 1) return;
-                const id = node.getAttribute?.('data-id');
-                if (id && messageCache.has(id)) {
-                    const cached = messageCache.get(id);
+            const textEl = msg.querySelector('.selectable-text, span[dir]');
+            const text = textEl ? textEl.innerText : '';
+            const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
 
-                    // Cria um aviso visual de mensagem apagada
-                    const div = document.createElement('div');
-                    div.style.cssText = `
-                        background: #2a2a2a;
-                        border-left: 4px solid #ff5555;
-                        padding: 8px 12px;
-                        margin: 4px 0;
-                        border-radius: 6px;
-                        color: #ffcccc;
-                        font-size: 13px;
-                    `;
-                    div.innerHTML = `
-                        <strong style="color:#ff5555">Mensagem apagada</strong><br>
-                        ${cached.text}
-                        <div style="font-size:11px;opacity:0.6;margin-top:4px">${cached.time}</div>
-                    `;
+            if (text) {
+                messageCache.set(id, { text, time });
+            }
+        });
+    }
 
-                    // Tenta inserir no lugar aproximado
-                    const chat = document.querySelector('[data-testid="conversation-panel-messages"]')
-                        || document.querySelector('.copyable-area');
-                    if (chat) chat.appendChild(div);
-                }
+    function restoreDeleted() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach(mut => {
+                mut.removedNodes.forEach(node => {
+                    if (node.nodeType !== 1) return;
+
+                    const id = node.getAttribute?.('data-id');
+                    if (id && messageCache.has(id)) {
+                        const cached = messageCache.get(id);
+
+                        const div = document.createElement('div');
+                        div.style.cssText = `
+                            background: #2a2a2a;
+                            border-left: 4px solid #ff5555;
+                            padding: 8px 12px;
+                            margin: 4px 0;
+                            border-radius: 6px;
+                            color: #ffcccc;
+                            font-size: 13px;
+                        `;
+                        div.innerHTML = `
+                            <strong style="color:#ff5555">Mensagem apagada</strong><br>
+                            ${cached.text}
+                            <div style="font-size:11px;opacity:0.6;margin-top:4px">${cached.time}</div>
+                        `;
+
+                        const chat = document.querySelector('[data-testid="conversation-panel-messages"]') 
+                                  || document.querySelector('.copyable-area');
+                        if (chat) {
+                            chat.appendChild(div);
+                        }
+                    }
+                });
             });
         });
-    });
 
-    const chatContainer = document.querySelector('[data-testid="conversation-panel-messages"]')
-        || document.body;
-    observer.observe(chatContainer, { childList: true, subtree: true });
+        // Observa o body inteiro (mais seguro)
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // Cache
+    const cacheObserver = new MutationObserver(cacheMessages);
+    cacheObserver.observe(document.body, { childList: true, subtree: true });
+
+    cacheMessages();
+    restoreDeleted();
+
+    console.log('[Anti-Delete] Ativado');
 }
 
-const cacheObserver = new MutationObserver(cacheMessages);
-cacheObserver.observe(document.body, { childList: true, subtree: true });
-cacheMessages();
-restoreDeleted();
+// Só inicia se a opção estiver ligada
+if (settings.antiDelete) {
+    startAntiDelete();
+}
 
 function setupOnlineNotifier() {
     let lastStatus = {};
