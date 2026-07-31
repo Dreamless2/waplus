@@ -260,12 +260,10 @@ function setupOnlineNotifier() {
         setTimeout(() => toast.remove(), 4000);
     }
 
-    // Pede permissão de notificação
     if (Notification.permission === 'default') {
         Notification.requestPermission();
     }
 
-    // Roda a cada 1.5 segundos
     setInterval(checkOnline, 1500);
 }
 
