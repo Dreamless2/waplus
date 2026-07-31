@@ -244,7 +244,7 @@ function setupOnlineNotifier() {
             const status = cell.querySelector('span[title*="online" i], span[title*="Online"]');
             if (name && status && lastStatus[name] !== 'online') {
                 lastStatus[name] = 'online';
-                notify(`${name} está online!`);
+                notify(`${name} are online!`);
             }
         });
     };
