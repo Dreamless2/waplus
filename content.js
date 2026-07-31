@@ -133,3 +133,70 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 
 updateSettings();
 injectHook();
+
+// Coloque isso junto com o resto do seu script
+const messageCache = new Map(); // key = data-id ou texto+hora
+
+function cacheMessages() {
+    const msgs = document.querySelectorAll('[data-id]');
+    msgs.forEach(msg => {
+        const id = msg.getAttribute('data-id');
+        if (!id || messageCache.has(id)) return;
+
+        const textEl = msg.querySelector('.selectable-text, span[dir]');
+        const text = textEl ? textEl.innerText : '';
+        const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
+
+        if (text) {
+            messageCache.set(id, { text, time, html: msg.outerHTML });
+        }
+    });
+}
+
+function restoreDeleted() {
+    // Quando o WhatsApp remove uma mensagem, ele costuma deixar um placeholder ou sumir com o data-id
+    // A gente observa e recria
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mut => {
+            mut.removedNodes.forEach(node => {
+                if (node.nodeType !== 1) return;
+                const id = node.getAttribute?.('data-id');
+                if (id && messageCache.has(id)) {
+                    const cached = messageCache.get(id);
+
+                    // Cria um aviso visual de mensagem apagada
+                    const div = document.createElement('div');
+                    div.style.cssText = `
+                        background: #2a2a2a;
+                        border-left: 4px solid #ff5555;
+                        padding: 8px 12px;
+                        margin: 4px 0;
+                        border-radius: 6px;
+                        color: #ffcccc;
+                        font-size: 13px;
+                    `;
+                    div.innerHTML = `
+                        <strong style="color:#ff5555">Mensagem apagada</strong><br>
+                        ${cached.text}
+                        <div style="font-size:11px;opacity:0.6;margin-top:4px">${cached.time}</div>
+                    `;
+
+                    // Tenta inserir no lugar aproximado
+                    const chat = document.querySelector('[data-testid="conversation-panel-messages"]') 
+                              || document.querySelector('.copyable-area');
+                    if (chat) chat.appendChild(div);
+                }
+            });
+        });
+    });
+
+    const chatContainer = document.querySelector('[data-testid="conversation-panel-messages"]') 
+                       || document.body;
+    observer.observe(chatContainer, { childList: true, subtree: true });
+}
+
+// Atualiza o cache a cada mudança
+const cacheObserver = new MutationObserver(cacheMessages);
+cacheObserver.observe(document.body, { childList: true, subtree: true });
+cacheMessages();
+restoreDeleted();
