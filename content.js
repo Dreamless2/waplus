@@ -162,57 +162,59 @@ function startAntiDelete() {
             const text = textEl ? textEl.innerText : '';
             const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
 
-            if (text && !text.includes('Mensagem apagada')) {
-                messageCache.set(id, { text, time });
+            const isSystemDeleted = text.includes('Mensagem apagada') || text.includes('This message was deleted');
+
+            if (text && !isSystemDeleted) {
+                messageCache.set(id, { text, time, element: msg });
             }
         });
     }
 
-    function restoreDeleted() {
+    function watchDeletions() {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(mut => {
-                mut.removedNodes.forEach(node => {
-                    if (node.nodeType !== 1) return;
+                let targetNode = mut.target;
+                if (targetNode.nodeType === 3) {
+                    targetNode = targetNode.parentElement;
+                }
 
-                    const id = node.getAttribute?.('data-id');
-                    if (id && messageCache.has(id)) {
-                        const cached = messageCache.get(id);
+                const msgContainer = targetNode?.closest('[data-id]');
+                if (!msgContainer) return;
 
-                        const div = document.createElement('div');
-                        div.setAttribute('data-ext-deleted', 'true');
-                        div.style.cssText = `
-                            background: #2a2a2a;
-                            border-left: 4px solid #ff5555;
-                            padding: 8px 12px;
-                            margin: 4px 0;
-                            border-radius: 6px;
-                            color: #ffcccc;
-                            font-size: 13px;
-                            width: fit-content;
-                            max-width: 65%;
+                const id = msgContainer.getAttribute('data-id');
+                if (!id || !messageCache.has(id) || msgContainer.hasAttribute('data-ext-deleted')) return;
+
+                const currentTextEl = msgContainer.querySelector('.selectable-text, span[dir]');
+                const currentText = currentTextEl ? currentTextEl.innerText : '';
+                
+                const becameDeleted = currentText.includes('Mensagem apagada') || currentText.includes('This message was deleted');
+
+                if (becameDeleted) {
+                    const cached = messageCache.get(id);
+                    msgContainer.setAttribute('data-ext-deleted', 'true');
+
+                    const textContainer = msgContainer.querySelector('.selectable-text')?.parentElement || currentTextEl?.parentElement;
+                    if (textContainer) {
+                        textContainer.innerHTML = `
+                            <div style="border-left: 3px solid #ff5555; padding-left: 8px; margin: 4px 0; color: #ffcccc;">
+                                <strong style="color:#ff5555; font-size: 12px;">[Recuperada]</strong><br>
+                                ${cached.text}
+                            </div>
                         `;
-                        div.innerHTML = `
-                            <strong style="color:#ff5555">Mensagem apagada</strong><br>
-                            ${cached.text}
-                            <div style="font-size:11px;opacity:0.6;margin-top:4px">${cached.time}</div>
-                        `;
-
-                        const chat = document.querySelector('[data-testid="conversation-panel-messages"]')
-                            || document.querySelector('.copyable-area');
-                        if (chat) {
-                            chat.appendChild(div);
-                            chat.scrollTop = chat.scrollHeight;
-                        }
                     }
-                });
+                }
             });
         });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
     }
 
     const cacheObserver = new MutationObserver((mutations) => {
-        const shouldCache = mutations.some(mut =>
+        const shouldCache = mutations.some(mut => 
             Array.from(mut.addedNodes).some(node => node.nodeType === 1 && !node.hasAttribute?.('data-ext-deleted'))
         );
         if (shouldCache) cacheMessages();
@@ -221,12 +223,13 @@ function startAntiDelete() {
     cacheObserver.observe(document.body, { childList: true, subtree: true });
 
     cacheMessages();
-    restoreDeleted();
+    watchDeletions();
 }
 
 if (settings.antiDelete) {
     startAntiDelete();
 }
+
 
 function setupOnlineNotifier() {
     let lastStatus = {};
