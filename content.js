@@ -239,11 +239,9 @@ function setupOnlineNotifier() {
     };
 
     function notify(msg) {
-        // Notificação do navegador
         if (Notification.permission === 'granted') {
             new Notification('WhatsApp', { body: msg, icon: 'https://web.whatsapp.com/favicon.ico' });
         }
-        // Também mostra um toast na tela
         showToast(msg);
     }
 
