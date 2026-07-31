@@ -232,36 +232,49 @@ function setupOnlineNotifier() {
     let lastStatus = {};
 
     const checkOnline = () => {
-        const header = document.querySelector('[data-testid="conversation-info-header"]')
-            || document.querySelector('header');
+        let activeContactName = null;
+        const header = document.querySelector('[data-testid="conversation-info-header"]') || document.querySelector('header');
+        
         if (header) {
             const subtitle = header.querySelector('span[title], span[dir="auto"]');
             const nameEl = header.querySelector('span[dir="auto"]');
-            const name = nameEl ? nameEl.innerText : 'Contato';
+            const name = nameEl ? nameEl.innerText : 'Contact';
+            activeContactName = name;
             const status = subtitle ? subtitle.innerText.toLowerCase() : '';
 
-            if (status.includes('online') || status.includes('digitando') || status.includes('gravando')) {
+            if (status.includes('online') || status.includes('typing') || status.includes('composing') || status.includes('recording')) {
                 if (lastStatus[name] !== 'online') {
                     lastStatus[name] = 'online';
-                    notify(`${name} está online!`);
+                    notify(`${name} is online!`);
                 }
             } else {
-                lastStatus[name] = 'offline';
+                if (lastStatus[name] === 'online') {
+                    lastStatus[name] = 'offline';
+                }
             }
         }
 
         document.querySelectorAll('[data-testid="cell-frame-container"]').forEach(cell => {
             const name = cell.querySelector('span[dir="auto"]')?.innerText;
-            const status = cell.querySelector('span[title*="online" i], span[title*="Online"]');
-            if (name && status && lastStatus[name] !== 'online') {
-                lastStatus[name] = 'online';
-                notify(`${name} are online!`);
+            if (!name || name === activeContactName) return;
+
+            const isOnline = cell.querySelector('span[title*="online" i], span[title*="Online"]') !== null;
+            
+            if (isOnline) {
+                if (lastStatus[name] !== 'online') {
+                    lastStatus[name] = 'online';
+                    notify(`${name} is online!`);
+                }
+            } else {
+                if (lastStatus[name] === 'online') {
+                    lastStatus[name] = 'offline';
+                }
             }
         });
     };
 
     function notify(msg) {
-        if (Notification.permission === 'granted') {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
             new Notification('WhatsApp', { body: msg, icon: 'https://web.whatsapp.com/favicon.ico' });
         }
         showToast(msg);
@@ -271,20 +284,21 @@ function setupOnlineNotifier() {
         const toast = document.createElement('div');
         toast.textContent = text;
         toast.style.cssText = `
-            position: fixed; bottom: 30px; left: 30px; z-index: 99999;
+            position: fixed; bottom: 30px; left: 30px; z-index: 999999;
             background: #25D366; color: white; padding: 12px 20px;
             border-radius: 8px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s;
+            font-family: Arial, sans-serif; pointer-events: none;
         `;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
     }
 
-    if (Notification.permission === 'default') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
         Notification.requestPermission();
     }
 
-    setInterval(checkOnline, 1500);
+    setInterval(checkOnline, 2000);
 }
+
 
 setupOnlineNotifier();
