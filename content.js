@@ -134,8 +134,7 @@ observer.observe(document.documentElement, { childList: true, subtree: true });
 updateSettings();
 injectHook();
 
-// Coloque isso junto com o resto do seu script
-const messageCache = new Map(); // key = data-id ou texto+hora
+const messageCache = new Map(); 
 
 function cacheMessages() {
     const msgs = document.querySelectorAll('[data-id]');
