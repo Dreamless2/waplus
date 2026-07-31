@@ -213,7 +213,7 @@ function startAntiDelete() {
     cacheMessages();
     restoreDeleted();
 
-    console.log('[Anti-Delete] Ativado');
+    console.log('[Anti-Delete] Activated!');
 }
 
 if (settings.antiDelete) {
