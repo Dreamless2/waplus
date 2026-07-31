@@ -2,7 +2,8 @@ let settings = {
     status: true,
     typing: false,
     blueTicks: false,
-    audio: false
+    audio: false,
+    hideOnline: true
 };
 
 function updateSettings() {
