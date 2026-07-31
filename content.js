@@ -147,19 +147,22 @@ function startAntiDelete() {
         return;
     }
 
+    if (window.__waAntiDeleteInstalled) return;
+    window.__waAntiDeleteInstalled = true;
+
     const messageCache = new Map();
 
     function cacheMessages() {
         const msgs = document.querySelectorAll('[data-id]');
         msgs.forEach(msg => {
             const id = msg.getAttribute('data-id');
-            if (!id || messageCache.has(id)) return;
+            if (!id || messageCache.has(id) || msg.hasAttribute('data-ext-deleted')) return;
 
             const textEl = msg.querySelector('.selectable-text, span[dir]');
             const text = textEl ? textEl.innerText : '';
             const time = msg.querySelector('[data-pre-plain-text]')?.getAttribute('data-pre-plain-text') || '';
 
-            if (text) {
+            if (text && !text.includes('Mensagem apagada')) {
                 messageCache.set(id, { text, time });
             }
         });
@@ -176,6 +179,7 @@ function startAntiDelete() {
                         const cached = messageCache.get(id);
 
                         const div = document.createElement('div');
+                        div.setAttribute('data-ext-deleted', 'true');
                         div.style.cssText = `
                             background: #2a2a2a;
                             border-left: 4px solid #ff5555;
@@ -184,6 +188,8 @@ function startAntiDelete() {
                             border-radius: 6px;
                             color: #ffcccc;
                             font-size: 13px;
+                            width: fit-content;
+                            max-width: 65%;
                         `;
                         div.innerHTML = `
                             <strong style="color:#ff5555">Mensagem apagada</strong><br>
@@ -195,6 +201,7 @@ function startAntiDelete() {
                             || document.querySelector('.copyable-area');
                         if (chat) {
                             chat.appendChild(div);
+                            chat.scrollTop = chat.scrollHeight;
                         }
                     }
                 });
@@ -204,7 +211,13 @@ function startAntiDelete() {
         observer.observe(document.body, { childList: true, subtree: true });
     }
 
-    const cacheObserver = new MutationObserver(cacheMessages);
+    const cacheObserver = new MutationObserver((mutations) => {
+        const shouldCache = mutations.some(mut => 
+            Array.from(mut.addedNodes).some(node => node.nodeType === 1 && !node.hasAttribute?.('data-ext-deleted'))
+        );
+        if (shouldCache) cacheMessages();
+    });
+
     cacheObserver.observe(document.body, { childList: true, subtree: true });
 
     cacheMessages();
