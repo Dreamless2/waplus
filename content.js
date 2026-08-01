@@ -76,9 +76,24 @@ function findCloseButton(root) {
     return null;
 }
 
+// Nova função auxiliar para confirmar se o usuário realmente está visualizando um Status
+function isLookingAtStatus() {
+    // Verifica se a URL do WhatsApp Web aponta para a seção de status
+    if (window.location.hash.includes('/status')) return true;
+    
+    // Validação secundária por elementos do DOM exclusivos da tela de status do WA Web
+    const statusContainer = document.querySelector('div[style*="background-color: var(--status-background)"]') || 
+                            document.querySelector('.x1n2onr6.x1vjfegm.x193iq5w'); // Classes comuns do contêiner de status
+                            
+    return !!statusContainer;
+}
+
 function injectNativeButton() {
     if (!settings.status) return;
     if (document.getElementById('btn-download-status-native')) return;
+
+    // 1. Bloqueia a inserção se NÃO estiver na tela de Status
+    if (!isLookingAtStatus()) return;
 
     const closeButtonContainer = findCloseButton(document);
     if (!closeButtonContainer) return;
@@ -95,7 +110,6 @@ function injectNativeButton() {
     btn.style.alignItems = 'center';
     btn.style.justifyContent = 'center';
     btn.style.color = '#fff';
-
     btn.innerHTML = `
         <span aria-hidden="true" class="xxk0z11 xvy4d1p">
             <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" fill="currentColor">
@@ -106,10 +120,13 @@ function injectNativeButton() {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const video = document.querySelector('video');
-        const img = document.querySelector('img[src^="blob:"]') || document.querySelector('img');
+        
+        // Busca a mídia limitando o escopo ao contêiner de exibição do status ativo
+        const activeStatusArea = closeButtonContainer.closest('.x1vjfegm') || document;
+        const video = activeStatusArea.querySelector('video');
+        const img = activeStatusArea.querySelector('img[src^="blob:"]') || activeStatusArea.querySelector('img');
+        
         let mediaUrl = null;
-
         if (video && video.src) mediaUrl = video.src;
         else if (img && img.src) mediaUrl = img.src;
 
@@ -121,12 +138,13 @@ function injectNativeButton() {
             a.click();
             document.body.removeChild(a);
         } else {
-            alert('Error: Media not found!');
+            alert('Erro: Mídia do Status não encontrada!');
         }
     });
 
     targetRow.insertBefore(btn, closeButtonContainer);
 }
+
 
 chrome.storage.onChanged.addListener(() => {
     updateSettings();
