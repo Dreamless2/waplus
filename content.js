@@ -80,11 +80,11 @@ function findCloseButton(root) {
 function isLookingAtStatus() {
     // Verifica se a URL do WhatsApp Web aponta para a seção de status
     if (window.location.hash.includes('/status')) return true;
-    
+
     // Validação secundária por elementos do DOM exclusivos da tela de status do WA Web
-    const statusContainer = document.querySelector('div[style*="background-color: var(--status-background)"]') || 
-                            document.querySelector('.x1n2onr6.x1vjfegm.x193iq5w'); // Classes comuns do contêiner de status
-                            
+    const statusContainer = document.querySelector('div[style*="background-color: var(--status-background)"]') ||
+        document.querySelector('.x1n2onr6.x1vjfegm.x193iq5w'); // Classes comuns do contêiner de status
+
     return !!statusContainer;
 }
 
@@ -120,12 +120,12 @@ function injectNativeButton() {
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        
+
         // Busca a mídia limitando o escopo ao contêiner de exibição do status ativo
         const activeStatusArea = closeButtonContainer.closest('.x1vjfegm') || document;
         const video = activeStatusArea.querySelector('video');
         const img = activeStatusArea.querySelector('img[src^="blob:"]') || activeStatusArea.querySelector('img');
-        
+
         let mediaUrl = null;
         if (video && video.src) mediaUrl = video.src;
         else if (img && img.src) mediaUrl = img.src;
